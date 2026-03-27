@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { User, GraduationCap, Briefcase, CheckCircle, AlertCircle, Phone, Mail, Globe, MapPin, ChevronDown, Trash2, X } from 'lucide-react';
+import { User, GraduationCap, Briefcase, CheckCircle, AlertCircle, Phone, Mail, Globe, MapPin, ChevronDown, Trash2, X, Upload } from 'lucide-react';
 
 interface FormData {
   fullName: string;
@@ -18,6 +18,8 @@ interface FormData {
   experienceLevel: string;
   skills: string;
   preferredLocation: string;
+  jobMelaCity: string;
+  resume: string;
 }
 
 interface FormErrors {
@@ -33,6 +35,23 @@ const HIRING_ROLES = [
   "Full Stack Developer",
   "UI/UX Designer",
   "Data Scientist"
+];
+
+const ANDHRA_PRADESH_CITIES = [
+  "Visakhapatnam",
+  "Vijayawada",
+  "Guntur",
+  "Nellore",
+  "Kurnool",
+  "Kakinada",
+  "Rajamahendravaram",
+  "Tirupati",
+  "Kadapa",
+  "Anantapur",
+  "Eluru",
+  "Vizianagaram",
+  "Ongole",
+  "Chittoor"
 ];
 
 const Logo = ({ className = "" }: { className?: string }) => (
@@ -65,6 +84,7 @@ export default function App() {
     fullName: '', fatherName: '', dateOfBirth: '', gender: '', mobile: '', email: '', aadhaar: '',
     qualification: '', specialization: '', yearOfPassing: '', percentage: '',
     applyingFor: '', experienceLevel: '', skills: '', preferredLocation: '',
+    jobMelaCity: '', resume: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
@@ -77,6 +97,7 @@ export default function App() {
       fullName: '', fatherName: '', dateOfBirth: '', gender: '', mobile: '', email: '', aadhaar: '',
       qualification: '', specialization: '', yearOfPassing: '', percentage: '',
       applyingFor: '', experienceLevel: '', skills: '', preferredLocation: '',
+      jobMelaCity: '', resume: '',
     };
     setFormData(emptyForm);
     setErrors({});
@@ -161,10 +182,24 @@ export default function App() {
       case 'applyingFor':
       case 'experienceLevel':
       case 'percentage':
+      case 'resume':
         if (!value) error = 'This field is required';
+        break;
+      case 'jobMelaCity':
+        // Optional, so no error if empty
         break;
     }
     return error;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const name = e.target.name;
+    if (file) {
+      setFormData(prev => ({ ...prev, [name]: file.name }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
+      setTouched(prev => ({ ...prev, [name]: true }));
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -425,6 +460,38 @@ export default function App() {
                     </AnimatePresence>
                   </div>
                   <Input label="Preferred Location *" name="preferredLocation" value={formData.preferredLocation} onChange={handleChange} onBlur={handleBlur} error={errors.preferredLocation} touched={touched.preferredLocation} />
+                  <Select label="Job Mela City (Andhra Pradesh) [Optional]" name="jobMelaCity" value={formData.jobMelaCity} onChange={handleChange} onBlur={handleBlur} options={ANDHRA_PRADESH_CITIES} error={errors.jobMelaCity} touched={touched.jobMelaCity} />
+                  
+                  <div className="col-span-full">
+                    <label className="block text-sm font-bold text-gray-700 mb-3">Upload Resume (PDF/DOC) *</label>
+                    <div className="relative group">
+                      <input 
+                        type="file" 
+                        name="resume"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className={`w-full rounded-2xl border-2 border-dashed p-8 sm:p-12 transition-all flex flex-col items-center justify-center gap-4 ${formData.resume ? 'border-green-500 bg-green-50' : 'border-gray-200 group-hover:border-blue-400 bg-gray-50'}`}>
+                        <div className={`p-4 rounded-full ${formData.resume ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
+                          <Upload className="w-8 h-8" />
+                        </div>
+                        <div className="text-center">
+                          <p className={`text-lg font-bold ${formData.resume ? 'text-green-700' : 'text-gray-700'}`}>
+                            {formData.resume || 'Click or drag to upload resume'}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">PDF, DOC, DOCX (Max 5MB)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <AnimatePresence>
+                      {errors.resume && touched.resume && (
+                        <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="text-red-500 text-xs mt-2 flex items-center gap-1 font-semibold">
+                          <AlertCircle className="w-3 h-3" /> {errors.resume}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </Section>
               
