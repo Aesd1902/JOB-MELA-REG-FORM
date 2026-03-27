@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
-import { User, GraduationCap, Briefcase, CheckCircle, AlertCircle, Phone, Mail, Globe, MapPin, ChevronDown, Trash2, X, Upload } from 'lucide-react';
+import { User, GraduationCap, Briefcase, CheckCircle, AlertCircle, Phone, Mail, Globe, MapPin, ChevronDown, Trash2, X, Upload, Database, Search, Calendar } from 'lucide-react';
+
+interface RegistrationRecord extends FormData {
+  id: number;
+  createdAt: string;
+}
 
 interface FormData {
   fullName: string;
@@ -91,6 +96,27 @@ export default function App() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showDatabase, setShowDatabase] = useState(false);
+  const [dbRecords, setDbRecords] = useState<RegistrationRecord[]>([]);
+
+  // Load database from localStorage
+  useEffect(() => {
+    const savedDb = localStorage.getItem('cognito_db_registrations');
+    if (savedDb) {
+      setDbRecords(JSON.parse(savedDb));
+    }
+  }, []);
+
+  const saveToDatabase = (data: FormData) => {
+    const newRecord: RegistrationRecord = {
+      ...data,
+      id: Date.now(),
+      createdAt: new Date().toISOString()
+    };
+    const updatedDb = [newRecord, ...dbRecords];
+    setDbRecords(updatedDb);
+    localStorage.setItem('cognito_db_registrations', JSON.stringify(updatedDb));
+  };
 
   const resetForm = () => {
     const emptyForm = {
@@ -235,6 +261,7 @@ export default function App() {
     setTouched(allTouched);
 
     if (Object.keys(newErrors).length === 0) {
+      saveToDatabase(formData);
       localStorage.setItem('cognitoRegistration', JSON.stringify(formData));
       setIsSubmitted(true);
     } else {
@@ -341,6 +368,13 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-2 sm:gap-6 text-sm font-medium text-gray-600">
+            <button 
+              onClick={() => setShowDatabase(true)}
+              className="hidden md:flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors font-bold px-4 py-2 rounded-xl hover:bg-blue-50"
+            >
+              <Database className="w-4 h-4" />
+              View Database
+            </button>
             <a 
               href="tel:+918978246111"
               className="bg-blue-900 text-white p-3 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-blue-800 transition-all shadow-lg hover:shadow-blue-900/20 active:scale-95 flex items-center gap-2"
@@ -579,6 +613,113 @@ export default function App() {
               >
                 <X className="w-6 h-6" />
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Database Modal */}
+      <AnimatePresence>
+        {showDatabase && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDatabase(false)}
+              className="absolute inset-0 bg-gray-950/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 30 }}
+              className="relative bg-white w-full max-w-6xl h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="p-6 sm:p-10 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Registration Database</h3>
+                    <p className="text-gray-500 text-sm font-medium">Stored in Local SQL-like Storage</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowDatabase(false)}
+                  className="p-3 bg-gray-100 rounded-2xl text-gray-500 hover:bg-gray-200 transition-all active:scale-95"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-auto p-6 sm:p-10">
+                {dbRecords.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
+                      <Search className="w-12 h-12" />
+                    </div>
+                    <p className="text-gray-400 font-medium text-lg">No records found in the database yet.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-3xl border border-gray-100 shadow-sm">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100">
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">ID</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Full Name</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Email</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Mobile</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Qualification</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Applied For</th>
+                          <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-widest">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {dbRecords.map((record) => (
+                          <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
+                            <td className="px-6 py-5 text-sm font-mono text-gray-400">#{record.id.toString().slice(-6)}</td>
+                            <td className="px-6 py-5">
+                              <p className="font-bold text-gray-900">{record.fullName}</p>
+                              <p className="text-xs text-gray-500">S/o {record.fatherName}</p>
+                            </td>
+                            <td className="px-6 py-5 text-sm text-gray-600">{record.email}</td>
+                            <td className="px-6 py-5 text-sm font-medium text-gray-900">{record.mobile}</td>
+                            <td className="px-6 py-5 text-sm text-gray-600">{record.qualification}</td>
+                            <td className="px-6 py-5">
+                              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                {record.applyingFor}
+                              </span>
+                            </td>
+                            <td className="px-6 py-5 text-sm text-gray-400">
+                              {new Date(record.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 sm:p-10 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Total Records: {dbRecords.length}
+                </div>
+                <button 
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to clear the entire database?')) {
+                      setDbRecords([]);
+                      localStorage.removeItem('cognito_db_registrations');
+                    }
+                  }}
+                  className="text-red-600 hover:text-red-700 text-sm font-bold flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear Database
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
