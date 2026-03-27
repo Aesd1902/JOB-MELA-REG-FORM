@@ -170,6 +170,15 @@ export default function App() {
     y.set(0);
   };
 
+  // Data Sanitization Helper
+  const sanitizeInput = (input: string): string => {
+    if (!input) return '';
+    // Strip HTML tags to prevent XSS
+    const stripped = input.replace(/<[^>]*>?/gm, '');
+    // Trim whitespace
+    return stripped.trim();
+  };
+
   useEffect(() => {
     const savedData = localStorage.getItem('cognitoRegistration');
     if (savedData) setFormData(JSON.parse(savedData));
@@ -221,7 +230,27 @@ export default function App() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const name = e.target.name;
+    
     if (file) {
+      // 1. Check File Size (Limit: 2MB = 2 * 1024 * 1024 bytes)
+      const MAX_SIZE = 2 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        setErrors(prev => ({ ...prev, [name]: 'File size exceeds 2MB limit' }));
+        setFormData(prev => ({ ...prev, [name]: '' }));
+        return;
+      }
+
+      // 2. Check File Extension strictly
+      const allowedExtensions = ['pdf', 'doc', 'docx'];
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      
+      if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+        setErrors(prev => ({ ...prev, [name]: 'Only PDF, DOC, or DOCX allowed' }));
+        setFormData(prev => ({ ...prev, [name]: '' }));
+        return;
+      }
+
+      // If valid
       setFormData(prev => ({ ...prev, [name]: file.name }));
       setErrors(prev => ({ ...prev, [name]: '' }));
       setTouched(prev => ({ ...prev, [name]: true }));
@@ -248,11 +277,22 @@ export default function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Sanitize all text fields before validation and submission
+    const sanitizedData = { ...formData };
+    Object.keys(sanitizedData).forEach(key => {
+      const k = key as keyof FormData;
+      if (typeof sanitizedData[k] === 'string' && k !== 'resume') {
+        sanitizedData[k] = sanitizeInput(sanitizedData[k]);
+      }
+    });
+    
+    setFormData(sanitizedData);
+
     const newErrors: FormErrors = {};
     const allTouched: { [key: string]: boolean } = {};
     
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, (formData as any)[key]);
+    Object.keys(sanitizedData).forEach(key => {
+      const error = validateField(key, (sanitizedData as any)[key]);
       if (error) newErrors[key] = error;
       allTouched[key] = true;
     });
@@ -261,8 +301,8 @@ export default function App() {
     setTouched(allTouched);
 
     if (Object.keys(newErrors).length === 0) {
-      saveToDatabase(formData);
-      localStorage.setItem('cognitoRegistration', JSON.stringify(formData));
+      saveToDatabase(sanitizedData);
+      localStorage.setItem('cognitoRegistration', JSON.stringify(sanitizedData));
       setIsSubmitted(true);
     } else {
       const firstErrorField = Object.keys(newErrors)[0];
