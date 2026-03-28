@@ -59,28 +59,14 @@ const ANDHRA_PRADESH_CITIES = [
   "Chittoor"
 ];
 
-const Logo = ({ className = "" }: { className?: string }) => (
-  <div className={`flex items-center gap-2 sm:gap-3 ${className}`}>
-    <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        {/* Head Silhouette */}
-        <path 
-          d="M30,85 C30,85 25,80 22,70 C18,60 15,50 15,40 C15,20 30,10 50,10 C70,10 85,25 85,45 C85,65 75,80 60,85 L60,90 L30,90 Z" 
-          fill="#1e3a8a" 
-        />
-        {/* Gears (Simplified) */}
-        <circle cx="50" cy="40" r="15" fill="#94a3b8" opacity="0.5" />
-        <path d="M50,25 L50,30 M50,50 L50,55 M35,40 L40,40 M60,40 L65,40" stroke="white" strokeWidth="2" />
-        {/* Magnifying Glass */}
-        <circle cx="55" cy="55" r="12" fill="none" stroke="#fbbf24" strokeWidth="3" />
-        <line x1="64" y1="64" x2="75" y2="75" stroke="#fbbf24" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    </div>
-    <div className="flex flex-col">
-      <span className="text-lg sm:text-xl font-black text-blue-900 leading-none tracking-tighter">COGNITO</span>
-      <span className="text-lg sm:text-xl font-black text-gray-600 leading-none tracking-tighter">INSIGHTS</span>
-      <span className="text-[8px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Solutions Pvt Ltd</span>
-    </div>
+const Logo = ({ className = "", imgClassName = "" }: { className?: string, imgClassName?: string }) => (
+  <div className={`flex items-center ${className}`}>
+    <img 
+      src="/IMG-20260223-WA0006.jpg" 
+      alt="Cognito Insights Logo" 
+      className={`h-10 sm:h-14 w-auto object-contain ${imgClassName}`}
+      referrerPolicy="no-referrer"
+    />
   </div>
 );
 
@@ -408,13 +394,6 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-2 sm:gap-6 text-sm font-medium text-gray-600">
-            <button 
-              onClick={() => setShowDatabase(true)}
-              className="hidden md:flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors font-bold px-4 py-2 rounded-xl hover:bg-blue-50"
-            >
-              <Database className="w-4 h-4" />
-              View Database
-            </button>
             <a 
               href="tel:+918978246111"
               className="bg-blue-900 text-white p-3 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-blue-800 transition-all shadow-lg hover:shadow-blue-900/20 active:scale-95 flex items-center gap-2"
@@ -769,7 +748,7 @@ export default function App() {
       <footer className="bg-gray-950 text-white pt-16 sm:pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-16">
           <div className="space-y-6 sm:space-y-8">
-            <Logo className="brightness-0 invert" />
+            <Logo imgClassName="invert grayscale h-14 sm:h-16" />
             <p className="text-gray-400 text-sm sm:text-base leading-relaxed font-light">
               We are a leading technology solutions provider dedicated to empowering businesses through innovation and exceptional talent acquisition.
             </p>
@@ -832,10 +811,23 @@ export default function App() {
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 mt-24 pt-8 border-t border-gray-900 text-center">
-          <p className="text-gray-600 text-sm font-medium">
-            © 2026 Cognito Insights Solutions Pvt Ltd. Crafted with excellence.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 mt-24 pt-8 border-t border-gray-900 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/IMG-20260223-WA0006.jpg" 
+              alt="Logo" 
+              className="h-6 w-auto invert grayscale opacity-30" 
+              referrerPolicy="no-referrer" 
+            />
+            <p className="text-gray-600 text-sm font-medium">
+              © 2026 Cognito Insights Solutions Pvt Ltd. Crafted with excellence.
+            </p>
+          </div>
+          <div className="flex gap-6 text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
+            <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
+            <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
+            <span className="hover:text-white cursor-pointer transition-colors">Cookie Policy</span>
+          </div>
         </div>
       </footer>
 
